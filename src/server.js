@@ -5,9 +5,10 @@ const http = require('http');
 const url = require('url');
 const { PORT, BASE_URL, REDIRECT_URI } = require('./config');
 const { handleHome } = require('./routes/home.route');
-const { handleAuth, handleCallback } = require('./routes/auth.route');
+const { handleAuth, handleCventAuth, handleCallback } = require('./routes/auth.route');
 const { handleResult } = require('./routes/profile.route');
 const { handleDashboard } = require('./routes/dashboard.route');
+const { handleCventDemo } = require('./routes/cvent-demo.route');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -35,6 +36,12 @@ const server = http.createServer(async (req, res) => {
 
     } else if (pathname === '/dashboard') {
       await handleDashboard(req, res);
+
+    } else if (pathname === '/cvent-demo') {
+      handleCventDemo(req, res, parsedUrl);
+
+    } else if (pathname === '/cvent-auth') {
+      handleCventAuth(req, res);
 
     } else if (pathname === '/preview') {
       // DEV ONLY — preview all page states without going through OAuth

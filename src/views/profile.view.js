@@ -289,9 +289,8 @@ function getWalkInPage(result) {
         <div class="detail-value">${formatTime(checkinTime)}</div>
       </div>
 
-      <div class="detail-box light-amber">
-        <div class="detail-label">Note</div>
-        <div class="detail-value" style="font-size:13px;">Your name wasn't on the pre-registered list — your details have been noted and you've been admitted as a walk-in.</div>
+      <div style="font-size:14px; color:#1b1f23; line-height:1.6; margin-top:8px;">
+        Show this screen to a member of the events team at the entrance to gain access.
       </div>
 
       <a href="/" class="action-btn btn-outline">Back to Home</a>

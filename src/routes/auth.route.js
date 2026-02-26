@@ -4,6 +4,25 @@ const { exchangeCodeForToken, fetchVerificationReport, fetchProfileInfo } = requ
 const { findAttendee, isAlreadyCheckedIn, recordCheckin } = require('../services/checkin.service');
 const { getErrorPage } = require('../views/error.view');
 
+// POST /cvent-auth — kick off LinkedIn OAuth for the cvent demo flow
+function handleCventAuth(req, res) {
+  if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
+    res.writeHead(500, { 'Content-Type': 'text/html' });
+    res.end(getErrorPage('LinkedIn credentials are not configured.'));
+    return;
+  }
+
+  const scopes = 'r_verify_details r_profile_basicinfo r_most_recent_education r_primary_current_experience';
+  const sessionId = Math.random().toString(36).substring(7);
+  createSession(sessionId, { type: 'cvent_demo', scopes });
+
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${sessionId}&scope=${encodeURIComponent(scopes)}`;
+
+  console.log('🔐 Starting LinkedIn OAuth for cvent demo...');
+  res.writeHead(302, { 'Location': authUrl });
+  res.end();
+}
+
 // GET /auth  — kick off the LinkedIn OAuth flow using server-side credentials
 function handleAuth(req, res) {
   if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
@@ -51,6 +70,7 @@ async function handleCallback(req, res, parsedUrl) {
   try {
     // 1. Exchange authorisation code for access token
     const accessToken = await exchangeCodeForToken(code, LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET);
+    const sessionType = session.type || 'checkin';
     deleteSession(sessionId);
     console.log('✅ Access token obtained');
 
@@ -70,8 +90,9 @@ async function handleCallback(req, res, parsedUrl) {
     const verifications = verificationReport.verifications || [];
     const isVerified = verifications.length > 0;
 
-    // Extract company from primary current experience
+    // Extract company and job title from primary current experience
     const company = profileInfo.primaryCurrentExperience?.companyName || '';
+    const jobTitle = profileInfo.primaryCurrentExperience?.title || '';
 
     // Extract most recent education
     const edu = profileInfo.mostRecentEducation;
@@ -79,6 +100,52 @@ async function handleCallback(req, res, parsedUrl) {
     const education = educationParts.join(' · ');
 
     console.log(`👤 LinkedIn sign-in: ${fullName} (${email})`);
+
+    // ── Cvent demo branch ───────────────────────────────────────────────────
+    if (sessionType === 'cvent_demo') {
+      // Dump all top-level keys so we can see everything the API returns
+      console.log('🔍 CVENT - profileInfo top-level keys:', Object.keys(profileInfo));
+      console.log('🔍 CVENT - full profileInfo:', JSON.stringify(profileInfo, null, 2));
+
+      // Pull verified workplaces from verificationReport.verifiedDetails
+      // sorted by most recently verified — this is the reliable source for company info
+      const verifiedDetails = verificationReport.verifiedDetails || [];
+      const workplaceVerifications = verifiedDetails
+        .filter(v => v.category === 'WORKPLACE')
+        .sort((a, b) => (b.lastVerifiedAt || 0) - (a.lastVerifiedAt || 0));
+
+      const primaryWorkplace = workplaceVerifications[0] || null;
+      const cventCompany     = primaryWorkplace?.organizationInfo?.name || company || '';
+      const cventCompanyUrl  = primaryWorkplace?.organizationInfo?.url  || '';
+
+      // All verified orgs for display (deduplicated by name)
+      const allVerifiedOrgs = workplaceVerifications
+        .map(v => v.organizationInfo?.name)
+        .filter(Boolean)
+        .filter((name, i, arr) => arr.indexOf(name) === i);
+
+      const resultId = Math.random().toString(36).substring(7);
+      createSession(resultId, {
+        type:            'cvent_result',
+        firstName,
+        lastName,
+        email,
+        company:         cventCompany,
+        companyUrl:      cventCompanyUrl,
+        allVerifiedOrgs,
+        profileUrl,
+        profilePicture,
+        isVerified,
+        verifications,
+        verifiedDetails: workplaceVerifications,
+        education
+      });
+      console.log(`✅ Cvent demo autofill ready for: ${fullName} | company: "${cventCompany}" | verified orgs: ${allVerifiedOrgs.join(', ')}`);
+      res.writeHead(302, { 'Location': `/cvent-demo?session=${resultId}` });
+      res.end();
+      return;
+    }
+    // ───────────────────────────────────────────────────────────────────────
 
     // 4. Look up the person on the attendee list
     const { attendee, matchMethod } = await findAttendee(fullName, email, profileUrl);
@@ -169,4 +236,4 @@ async function handleCallback(req, res, parsedUrl) {
   }
 }
 
-module.exports = { handleAuth, handleCallback };
+module.exports = { handleAuth, handleCventAuth, handleCallback };
