@@ -59,6 +59,15 @@ const server = http.createServer(async (req, res) => {
         res.end(getResultPage(mockData[type] || mockData.success));
       }
 
+    } else if (pathname === '/debug-uri') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        REDIRECT_URI,
+        BASE_URL,
+        VERCEL_URL: process.env.VERCEL_URL || null,
+        REDIRECT_URI_ENV: process.env.REDIRECT_URI || null
+      }, null, 2));
+
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not found');
