@@ -104,6 +104,8 @@ async function handleCallback(req, res, parsedUrl) {
     const education = educationParts.join(' · ');
 
     console.log(`👤 LinkedIn sign-in: ${fullName} (${email})`);
+    console.log('🔍 basicInfo keys:', Object.keys(profileInfo.basicInfo || {}));
+    console.log('🔍 primaryEmailAddress raw:', profileInfo.basicInfo?.primaryEmailAddress);
 
     // ── Cvent demo branch ───────────────────────────────────────────────────
     if (sessionType === 'cvent_demo') {
