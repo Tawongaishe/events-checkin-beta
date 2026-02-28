@@ -44,8 +44,7 @@ async function fetchProfileInfo(accessToken) {
     path: '/rest/identityMe',
     method: 'GET',
     headers: {
-      'LinkedIn-Version': '202510',
-      'X-Restli-Protocol-Version': '2.0.0',
+      'LinkedIn-Version': '202510.03',
       'Authorization': `Bearer ${accessToken}`
     }
   };

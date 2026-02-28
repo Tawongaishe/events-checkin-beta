@@ -90,9 +90,14 @@ async function handleCallback(req, res, parsedUrl) {
     const verifications = verificationReport.verifications || [];
     const isVerified = verifications.length > 0;
 
-    // Extract company and job title from primary current position
-    const company = profileInfo.primaryCurrentPosition?.companyName?.localized?.en_US || '';
-    const jobTitle = profileInfo.primaryCurrentPosition?.title?.localized?.en_US || '';
+    // Extract company from verified workplaces (most reliable source)
+    const verifiedDetails = verificationReport.verifiedDetails || [];
+    const primaryWorkplace = verifiedDetails
+      .filter(v => v.category === 'WORKPLACE')
+      .sort((a, b) => (b.lastVerifiedAt || 0) - (a.lastVerifiedAt || 0))[0] || null;
+    const company = primaryWorkplace?.organizationInfo?.name
+      || profileInfo.primaryCurrentPosition?.companyName?.localized?.en_US
+      || '';
 
     // Extract most recent education
     const edu = profileInfo.mostRecentEducation;
@@ -104,10 +109,6 @@ async function handleCallback(req, res, parsedUrl) {
     const education = educationParts.join(' · ');
 
     console.log(`👤 LinkedIn sign-in: ${fullName} (${email})`);
-    console.log('🔍 basicInfo keys:', Object.keys(profileInfo.basicInfo || {}));
-    console.log('🔍 verificationReport keys:', Object.keys(verificationReport));
-    console.log('🔍 verifiedDetails categories:', (verificationReport.verifiedDetails || []).map(v => v.category));
-    console.log('🔍 full verificationReport:', JSON.stringify(verificationReport, null, 2));
 
     // ── Cvent demo branch ───────────────────────────────────────────────────
     if (sessionType === 'cvent_demo') {
