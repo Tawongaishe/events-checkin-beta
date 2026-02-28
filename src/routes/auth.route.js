@@ -90,13 +90,17 @@ async function handleCallback(req, res, parsedUrl) {
     const verifications = verificationReport.verifications || [];
     const isVerified = verifications.length > 0;
 
-    // Extract company and job title from primary current experience
-    const company = profileInfo.primaryCurrentExperience?.companyName || '';
-    const jobTitle = profileInfo.primaryCurrentExperience?.title || '';
+    // Extract company and job title from primary current position
+    const company = profileInfo.primaryCurrentPosition?.companyName?.localized?.en_US || '';
+    const jobTitle = profileInfo.primaryCurrentPosition?.title?.localized?.en_US || '';
 
     // Extract most recent education
     const edu = profileInfo.mostRecentEducation;
-    const educationParts = [edu?.degreeName, edu?.fieldOfStudy, edu?.schoolName].filter(Boolean);
+    const educationParts = [
+      edu?.degreeName?.localized?.en_US,
+      edu?.fieldOfStudy?.localized?.en_US,
+      edu?.schoolName?.localized?.en_US
+    ].filter(Boolean);
     const education = educationParts.join(' · ');
 
     console.log(`👤 LinkedIn sign-in: ${fullName} (${email})`);

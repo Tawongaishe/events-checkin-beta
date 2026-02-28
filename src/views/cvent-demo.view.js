@@ -405,8 +405,7 @@ function getCventDemoPage(prefillData = null) {
          </div>`
       : `<a href="/cvent-auth" class="voli-btn">
            ${IN_BUG_WHITE}
-           <span>Autofill with VOLI Plus</span>
-           <span class="voli-btn-sub">Sign in with LinkedIn · Instant autofill</span>
+           <span>Sign in with LinkedIn</span>
          </a>
          <div class="voli-or">or fill in manually below</div>`
     }

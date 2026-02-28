@@ -44,11 +44,12 @@ async function fetchProfileInfo(accessToken) {
     path: '/rest/identityMe',
     method: 'GET',
     headers: {
-      'LinkedIn-Version': '202510.03',
+      'LinkedIn-Version': '202510',
+      'X-Restli-Protocol-Version': '2.0.0',
       'Authorization': `Bearer ${accessToken}`
     }
   };
-  
+
   return await httpsRequest(options);
 }
 
