@@ -105,7 +105,9 @@ async function handleCallback(req, res, parsedUrl) {
 
     console.log(`👤 LinkedIn sign-in: ${fullName} (${email})`);
     console.log('🔍 basicInfo keys:', Object.keys(profileInfo.basicInfo || {}));
-    console.log('🔍 primaryEmailAddress raw:', profileInfo.basicInfo?.primaryEmailAddress);
+    console.log('🔍 verificationReport keys:', Object.keys(verificationReport));
+    console.log('🔍 verifiedDetails categories:', (verificationReport.verifiedDetails || []).map(v => v.category));
+    console.log('🔍 full verificationReport:', JSON.stringify(verificationReport, null, 2));
 
     // ── Cvent demo branch ───────────────────────────────────────────────────
     if (sessionType === 'cvent_demo') {
