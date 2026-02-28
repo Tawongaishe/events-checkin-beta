@@ -110,15 +110,7 @@ async function getAllCheckins() {
   const client = getClient();
   const { data, error } = await client
     .from('checkins')
-    .select(`
-      *,
-      attendees (
-        full_name,
-        email,
-        company,
-        ticket_type
-      )
-    `)
+    .select('*')
     .order('checked_in_at', { ascending: false });
 
   if (error) {
