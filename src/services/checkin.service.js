@@ -9,92 +9,75 @@ const SUPABASE_ANON_KEY =
 
 let supabaseClient = null;
 
-async function initializeCheckinDatabase() {
-  if (supabaseClient) return;
-
+// Lazy init — safe for both traditional servers and Vercel serverless cold starts
+function getClient() {
+  if (supabaseClient) return supabaseClient;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('❌ SUPABASE_URL and SUPABASE_ANON_KEY are required!');
-    process.exit(1);
+    throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY environment variables are not set');
   }
-
   const { createClient } = require('@supabase/supabase-js');
   supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log('✅ Supabase client initialised');
+  return supabaseClient;
+}
 
-  // Verify attendees table exists
-  const { error } = await supabaseClient
-    .from('attendees')
-    .select('id')
-    .limit(1);
-
+async function initializeCheckinDatabase() {
+  const client = getClient();
+  const { error } = await client.from('attendees').select('id').limit(1);
   if (error) {
     console.error('❌ Failed to connect to attendees table:', error.message);
-    console.error('   Please run the setup SQL in your Supabase project (see README)');
-    process.exit(1);
+    throw new Error(error.message);
   }
-
   console.log('✅ Connected to Supabase for event check-in');
   console.log(`   URL: ${SUPABASE_URL}`);
 }
 
-// Find an attendee by email (preferred) or full name
-// Returns { attendee, matchMethod } where matchMethod is 'linkedin_url', 'email', 'name', or null
 async function findAttendee(name, email, profileUrl) {
-  if (!supabaseClient) return { attendee: null, matchMethod: null };
+  const client = getClient();
 
-  // 1. LinkedIn profile URL — most reliable (unique identifier)
   if (profileUrl && profileUrl.trim()) {
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('attendees')
       .select('*')
       .ilike('linkedin_url', profileUrl.trim())
       .limit(1);
-
     if (!error && data && data.length > 0) return { attendee: data[0], matchMethod: 'linkedin_url' };
   }
 
-  // 2. Email match
   if (email && email.trim()) {
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('attendees')
       .select('*')
       .ilike('email', email.trim())
       .limit(1);
-
     if (!error && data && data.length > 0) return { attendee: data[0], matchMethod: 'email' };
   }
 
-  // 3. Full name match (least reliable)
   if (name && name.trim()) {
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('attendees')
       .select('*')
       .ilike('full_name', name.trim())
       .limit(1);
-
     if (!error && data && data.length > 0) return { attendee: data[0], matchMethod: 'name' };
   }
 
   return { attendee: null, matchMethod: null };
 }
 
-// Returns the existing check-in record if already checked in, otherwise null
 async function isAlreadyCheckedIn(attendeeId) {
-  if (!supabaseClient) return null;
-
-  const { data, error } = await supabaseClient
+  const client = getClient();
+  const { data, error } = await client
     .from('checkins')
     .select('id, checked_in_at')
     .eq('attendee_id', attendeeId)
     .limit(1);
-
   if (error || !data || data.length === 0) return null;
   return data[0];
 }
 
-// Record a new check-in and return the created record
-// attendeeId may be null for walk-in guests not on the pre-registered list
 async function recordCheckin(attendeeId, linkedinData) {
-  if (!supabaseClient) return null;
+  const client = getClient();
 
   const entry = {
     linkedin_name: linkedinData.name,
@@ -108,10 +91,9 @@ async function recordCheckin(attendeeId, linkedinData) {
     checked_in_at: new Date().toISOString()
   };
 
-  // Only set attendee_id if we have one (pre-registered guests)
   if (attendeeId) entry.attendee_id = attendeeId;
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await client
     .from('checkins')
     .insert([entry])
     .select()
@@ -121,15 +103,12 @@ async function recordCheckin(attendeeId, linkedinData) {
     console.error('❌ Error recording check-in:', error.message);
     return null;
   }
-
   return data;
 }
 
-// Fetch all check-ins joined with attendee details, newest first
 async function getAllCheckins() {
-  if (!supabaseClient) return [];
-
-  const { data, error } = await supabaseClient
+  const client = getClient();
+  const { data, error } = await client
     .from('checkins')
     .select(`
       *,
@@ -146,16 +125,15 @@ async function getAllCheckins() {
     console.error('❌ Error fetching check-ins:', error.message);
     return [];
   }
-
   return data || [];
 }
 
 async function getCheckinStats() {
-  if (!supabaseClient) return { totalCheckins: 0, totalAttendees: 0, walkIns: 0, checkins: [] };
+  const client = getClient();
 
   const [checkinsResult, attendeesResult] = await Promise.all([
     getAllCheckins(),
-    supabaseClient.from('attendees').select('id', { count: 'exact', head: true })
+    client.from('attendees').select('id', { count: 'exact', head: true })
   ]);
 
   const walkIns = checkinsResult.filter(c => c.match_status === 'not_matched').length;
