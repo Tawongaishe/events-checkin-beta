@@ -1,7 +1,7 @@
 const { REDIRECT_URI, LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET } = require('../config');
 const { createSession, getSession, deleteSession } = require('../services/session.service');
 const { exchangeCodeForToken, fetchVerificationReport, fetchProfileInfo } = require('../services/linkedin.service');
-const { findAttendee, isAlreadyCheckedIn, recordCheckin } = require('../services/checkin.service');
+const { findAttendee, isAlreadyCheckedIn, recordCheckin, recordCheckinError } = require('../services/checkin.service');
 const { getErrorPage } = require('../views/error.view');
 
 // POST /cvent-auth — kick off LinkedIn OAuth for the cvent demo flow
@@ -33,7 +33,7 @@ function handleAuth(req, res) {
 
   const scopes = 'r_verify_details r_profile_basicinfo r_most_recent_education r_primary_current_experience';
   const sessionId = Math.random().toString(36).substring(7);
-  createSession(sessionId, { scopes });
+  createSession(sessionId, { scopes, startedAt: new Date().toISOString() });
 
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${sessionId}&scope=${encodeURIComponent(scopes)}`;
 
@@ -49,6 +49,8 @@ async function handleCallback(req, res, parsedUrl) {
   const error = parsedUrl.query.error;
 
   if (error) {
+    const session = getSession(sessionId);
+    recordCheckinError('oauth_denied', error, session?.startedAt || null).catch(() => {});
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(getErrorPage(error));
     return;
@@ -66,6 +68,8 @@ async function handleCallback(req, res, parsedUrl) {
     res.end(getErrorPage('Session expired or invalid. Please go back and try again.'));
     return;
   }
+
+  const startedAt = session.startedAt || null;
 
   try {
     // 1. Exchange authorisation code for access token
@@ -172,7 +176,8 @@ async function handleCallback(req, res, parsedUrl) {
         profileUrl,
         profilePicture,
         isVerified,
-        matchStatus: 'not_matched'
+        matchStatus: 'not_matched',
+        startedAt
       });
 
       const resultId = Math.random().toString(36).substring(7);
@@ -220,7 +225,8 @@ async function handleCallback(req, res, parsedUrl) {
       profileUrl,
       profilePicture,
       isVerified,
-      matchStatus
+      matchStatus,
+      startedAt
     });
 
     console.log(`✅ Checked in: ${fullName} at ${checkin?.checked_in_at} (matched by ${matchMethod})`);
@@ -242,6 +248,7 @@ async function handleCallback(req, res, parsedUrl) {
 
   } catch (err) {
     console.error('❌ Check-in error:', err.message);
+    recordCheckinError(err.constructor.name, err.message, startedAt).catch(() => {});
     res.writeHead(500, { 'Content-Type': 'text/html' });
     res.end(getErrorPage(err.message));
   }

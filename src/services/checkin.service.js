@@ -79,6 +79,11 @@ async function isAlreadyCheckedIn(attendeeId) {
 async function recordCheckin(attendeeId, linkedinData) {
   const client = getClient();
 
+  const now = new Date();
+  const durationMs = linkedinData.startedAt
+    ? now.getTime() - new Date(linkedinData.startedAt).getTime()
+    : null;
+
   const entry = {
     linkedin_name: linkedinData.name,
     linkedin_email: linkedinData.email,
@@ -88,8 +93,14 @@ async function recordCheckin(attendeeId, linkedinData) {
     linkedin_profile_picture: linkedinData.profilePicture,
     verified_identity: linkedinData.isVerified,
     match_status: linkedinData.matchStatus,
-    checked_in_at: new Date().toISOString()
+    checked_in_at: now.toISOString(),
+    session_started_at: linkedinData.startedAt || null,
+    checkin_duration_ms: durationMs
   };
+
+  if (durationMs !== null) {
+    console.log(`⏱  Check-in duration: ${(durationMs / 1000).toFixed(1)}s`);
+  }
 
   if (attendeeId) entry.attendee_id = attendeeId;
 
@@ -138,6 +149,19 @@ async function getCheckinStats() {
   };
 }
 
+async function recordCheckinError(errorType, errorMessage, sessionStartedAt) {
+  const client = getClient();
+  const { error } = await client
+    .from('checkin_errors')
+    .insert([{
+      error_type: errorType,
+      error_message: errorMessage,
+      session_started_at: sessionStartedAt || null
+    }]);
+  if (error) console.error('❌ Error recording checkin error:', error.message);
+  else console.log(`⚠️  Checkin error recorded: ${errorType} — ${errorMessage}`);
+}
+
 async function recordFeedback(checkinId, rating, comment) {
   const client = getClient();
   const { data, error } = await client
@@ -158,6 +182,7 @@ module.exports = {
   findAttendee,
   isAlreadyCheckedIn,
   recordCheckin,
+  recordCheckinError,
   getAllCheckins,
   getCheckinStats,
   recordFeedback
