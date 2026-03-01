@@ -138,11 +138,27 @@ async function getCheckinStats() {
   };
 }
 
+async function recordFeedback(checkinId, rating, comment) {
+  const client = getClient();
+  const { data, error } = await client
+    .from('checkin_feedback')
+    .insert([{ checkin_id: checkinId || null, rating, comment: comment || null }])
+    .select()
+    .single();
+  if (error) {
+    console.error('❌ Error recording feedback:', error.message);
+    return null;
+  }
+  console.log(`⭐ Feedback recorded: ${rating}/5 for checkin ${checkinId}`);
+  return data;
+}
+
 module.exports = {
   initializeCheckinDatabase,
   findAttendee,
   isAlreadyCheckedIn,
   recordCheckin,
   getAllCheckins,
-  getCheckinStats
+  getCheckinStats,
+  recordFeedback
 };

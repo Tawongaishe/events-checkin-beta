@@ -189,6 +189,110 @@ function baseHtml(bodyContent, title) {
     .btn-primary:hover { background: #004182; }
     .btn-outline { background: transparent; color: #0a66c2; border: 1.5px solid #0a66c2; }
     .btn-outline:hover { background: #f0f7ff; }
+
+    /* Done button */
+    .done-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 48px;
+      background: #0a66c2;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .done-btn:hover { background: #004182; }
+
+    /* Feedback */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #feedbackContent { animation: slideUp 0.35s ease; }
+    .feedback-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b1f23;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .star-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .star {
+      font-size: 36px;
+      color: #ddd;
+      cursor: pointer;
+      transition: color 0.1s, transform 0.1s;
+      user-select: none;
+      line-height: 1;
+    }
+    .star.on  { color: #f59e0b; }
+    .star:hover { transform: scale(1.15); }
+    .feedback-comment {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e0dfdc;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #333;
+      resize: none;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .feedback-comment:focus { border-color: #0a66c2; }
+    .feedback-submit {
+      width: 100%;
+      height: 44px;
+      background: #0a66c2;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 10px;
+    }
+    .feedback-submit:hover { background: #004182; }
+    .feedback-submit:disabled { background: #057642; cursor: default; }
+    .feedback-skip {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 0;
+      text-align: center;
+    }
+    .feedback-skip:hover { color: #333; }
+    .feedback-done-msg {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 700;
+      color: #057642;
+      padding: 8px 0 4px;
+    }
+    .feedback-done-sub {
+      text-align: center;
+      font-size: 13px;
+      color: #595959;
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
@@ -197,10 +301,85 @@ function baseHtml(bodyContent, title) {
 </html>`;
 }
 
+// ─── Feedback section ─────────────────────────────────────────────────────────
+
+function feedbackSection(checkinId) {
+  if (!checkinId) return '';
+  return `
+  <div id="feedbackContent" style="display:none">
+    <div class="card-body">
+      <div class="feedback-label">How was your check-in experience?</div>
+      <div class="star-row" id="starRow">
+        <span class="star" data-v="1" onclick="setStar(1)">★</span>
+        <span class="star" data-v="2" onclick="setStar(2)">★</span>
+        <span class="star" data-v="3" onclick="setStar(3)">★</span>
+        <span class="star" data-v="4" onclick="setStar(4)">★</span>
+        <span class="star" data-v="5" onclick="setStar(5)">★</span>
+      </div>
+      <div id="feedbackForm">
+        <textarea class="feedback-comment" id="feedbackComment" placeholder="Any issues or comments? (optional)" rows="2"></textarea>
+        <button class="feedback-submit" id="feedbackSubmit" onclick="submitFeedback('${checkinId}')">Submit</button>
+        <button class="feedback-skip" onclick="skipFeedback()">Skip</button>
+      </div>
+      <div id="feedbackDone" style="display:none">
+        <div class="feedback-done-msg">All done!</div>
+        <div class="feedback-done-sub">Thanks — enjoy the event.</div>
+        <a href="/" class="action-btn btn-outline">Back to Home</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    var _selectedRating = 0;
+    function showFeedback() {
+      document.getElementById('checkinContent').style.display = 'none';
+      document.getElementById('feedbackContent').style.display = 'block';
+    }
+    function setStar(n) {
+      _selectedRating = n;
+      document.querySelectorAll('.star').forEach(function(s) {
+        s.classList.toggle('on', parseInt(s.dataset.v) <= n);
+      });
+    }
+    function skipFeedback() {
+      document.getElementById('feedbackForm').style.display = 'none';
+      document.getElementById('starRow').style.display = 'none';
+      document.querySelector('.feedback-label').style.display = 'none';
+      document.getElementById('feedbackDone').style.display = 'block';
+    }
+    function submitFeedback(checkinId) {
+      if (!_selectedRating) { alert('Please select a star rating first.'); return; }
+      var btn = document.getElementById('feedbackSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+      fetch('/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkinId: checkinId,
+          rating: _selectedRating,
+          comment: document.getElementById('feedbackComment').value.trim()
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function() {
+        document.getElementById('feedbackForm').style.display = 'none';
+        document.getElementById('starRow').style.display = 'none';
+        document.querySelector('.feedback-label').style.display = 'none';
+        document.getElementById('feedbackDone').style.display = 'block';
+      })
+      .catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+        alert('Could not submit — please try again.');
+      });
+    }
+  </script>`;
+}
+
 // ─── Success ──────────────────────────────────────────────────────────────────
 
 function getSuccessPage(result) {
-  const { attendee, linkedinName, linkedinEmail, profilePicture, checkinTime } = result;
+  const { checkinId, attendee, linkedinName, linkedinEmail, profilePicture, checkinTime } = result;
   const displayName = linkedinName || attendee?.full_name || 'Guest';
 
   const body = `
@@ -211,20 +390,26 @@ function getSuccessPage(result) {
       <div class="status-title">Checked In!</div>
       <div class="status-subtitle">Welcome — you're on the list.</div>
     </div>
-    <div class="card-body">
-      ${avatarHtml(profilePicture, displayName)}
-      <div class="person-name">${displayName}</div>
-      ${linkedinEmail ? `<div class="person-email">${linkedinEmail}</div>` : ''}
+    <div id="checkinContent">
+      <div class="card-body">
+        ${avatarHtml(profilePicture, displayName)}
+        <div class="person-name">${displayName}</div>
+        ${linkedinEmail ? `<div class="person-email">${linkedinEmail}</div>` : ''}
 
-      <hr class="divider">
+        <hr class="divider">
 
-      <div class="detail-box green">
-        <div class="detail-label">Checked in at</div>
-        <div class="detail-value">${formatTime(checkinTime)}</div>
+        <div class="detail-box green">
+          <div class="detail-label">Checked in at</div>
+          <div class="detail-value">${formatTime(checkinTime)}</div>
+        </div>
+
+        ${checkinId
+          ? `<button class="done-btn" onclick="showFeedback()">Done</button>`
+          : `<a href="/" class="action-btn btn-outline">Back to Home</a>`
+        }
       </div>
-
-      <a href="/" class="action-btn btn-outline">Back to Home</a>
     </div>
+    ${feedbackSection(checkinId)}
   </div>`;
 
   return baseHtml(body, 'Checked In');
@@ -266,7 +451,7 @@ function getAlreadyCheckedInPage(result) {
 // ─── Walk-in (not pre-registered, but admitted) ───────────────────────────────
 
 function getWalkInPage(result) {
-  const { linkedinName, linkedinEmail, profilePicture, isVerified, checkinTime } = result;
+  const { checkinId, linkedinName, linkedinEmail, profilePicture, isVerified, checkinTime } = result;
   const displayName = linkedinName || 'Guest';
 
   const body = `
@@ -277,24 +462,30 @@ function getWalkInPage(result) {
       <div class="status-title">Welcome!</div>
       <div class="status-subtitle">You're checked in — enjoy the event.</div>
     </div>
-    <div class="card-body">
-      ${avatarHtml(profilePicture, displayName)}
-      <div class="person-name">${displayName}</div>
-      ${linkedinEmail ? `<div class="person-email">${linkedinEmail}</div>` : ''}
+    <div id="checkinContent">
+      <div class="card-body">
+        ${avatarHtml(profilePicture, displayName)}
+        <div class="person-name">${displayName}</div>
+        ${linkedinEmail ? `<div class="person-email">${linkedinEmail}</div>` : ''}
 
-      <hr class="divider">
+        <hr class="divider">
 
-      <div class="detail-box green">
-        <div class="detail-label">Checked in at</div>
-        <div class="detail-value">${formatTime(checkinTime)}</div>
+        <div class="detail-box green">
+          <div class="detail-label">Checked in at</div>
+          <div class="detail-value">${formatTime(checkinTime)}</div>
+        </div>
+
+        <div style="font-size:14px; color:#1b1f23; line-height:1.6; margin-top:8px;">
+          Show this screen to a member of the events team at the entrance to gain access.
+        </div>
+
+        ${checkinId
+          ? `<button class="done-btn" onclick="showFeedback()">Done</button>`
+          : `<a href="/" class="action-btn btn-outline">Back to Home</a>`
+        }
       </div>
-
-      <div style="font-size:14px; color:#1b1f23; line-height:1.6; margin-top:8px;">
-        Show this screen to a member of the events team at the entrance to gain access.
-      </div>
-
-      <a href="/" class="action-btn btn-outline">Back to Home</a>
     </div>
+    ${feedbackSection(checkinId)}
   </div>`;
 
   return baseHtml(body, 'Checked In');

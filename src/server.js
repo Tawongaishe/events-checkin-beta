@@ -3,12 +3,15 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env.local'
 
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
 const { PORT, BASE_URL, REDIRECT_URI } = require('./config');
 const { handleHome } = require('./routes/home.route');
 const { handleAuth, handleCventAuth, handleCallback } = require('./routes/auth.route');
 const { handleResult } = require('./routes/profile.route');
 const { handleDashboard } = require('./routes/dashboard.route');
 const { handleCventDemo } = require('./routes/cvent-demo.route');
+const { handleFeedback } = require('./routes/feedback.route');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -43,12 +46,15 @@ const server = http.createServer(async (req, res) => {
     } else if (pathname === '/cvent-auth') {
       handleCventAuth(req, res);
 
+    } else if (pathname === '/feedback' && req.method === 'POST') {
+      await handleFeedback(req, res);
+
     } else if (pathname === '/preview') {
       // DEV ONLY — preview all page states without going through OAuth
       const type = parsedUrl.query.type || 'success';
       const mockData = {
-        success: { status: 'success', linkedinName: 'Alex Johnson', linkedinEmail: 'alex@example.com', profilePicture: '', isVerified: true, checkinTime: new Date().toISOString(), attendee: { full_name: 'Alex Johnson', ticket_type: 'General', company: 'Acme Corp' } },
-        walkin:  { status: 'walk_in', linkedinName: 'Jordan Lee', linkedinEmail: 'jordan@example.com', profilePicture: '', isVerified: false, checkinTime: new Date().toISOString() },
+        success: { status: 'success', checkinId: 'preview-mock-id', linkedinName: 'Alex Johnson', linkedinEmail: 'alex@example.com', profilePicture: '', isVerified: true, checkinTime: new Date().toISOString(), attendee: { full_name: 'Alex Johnson', ticket_type: 'General', company: 'Acme Corp' } },
+        walkin:  { status: 'walk_in', checkinId: 'preview-mock-id', linkedinName: 'Jordan Lee', linkedinEmail: 'jordan@example.com', profilePicture: '', isVerified: false, checkinTime: new Date().toISOString() },
         duplicate: { status: 'already_checked_in', linkedinName: 'Sam Rivera', linkedinEmail: 'sam@example.com', profilePicture: '', isVerified: true, originalCheckinTime: new Date(Date.now() - 600000).toISOString(), attendee: { full_name: 'Sam Rivera' } },
         error: null
       };
@@ -58,6 +64,16 @@ const server = http.createServer(async (req, res) => {
       } else {
         res.end(getResultPage(mockData[type] || mockData.success));
       }
+
+    } else if (pathname.startsWith('/images/')) {
+      const filePath = path.join(__dirname, '..', pathname);
+      fs.readFile(filePath, (err, data) => {
+        if (err) { res.writeHead(404); res.end('Not found'); return; }
+        const ext = path.extname(filePath).toLowerCase();
+        const mime = { '.avif': 'image/avif', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' }[ext] || 'application/octet-stream';
+        res.writeHead(200, { 'Content-Type': mime });
+        res.end(data);
+      });
 
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });

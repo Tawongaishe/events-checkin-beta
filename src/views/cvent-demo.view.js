@@ -98,7 +98,7 @@ function getCventDemoPage(prefillData = null) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Registration — Verifications Happy Hour</title>
+  <title>Event Registration — Shipping Trust Happy Hour</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -373,7 +373,7 @@ function getCventDemoPage(prefillData = null) {
     </div>
     <div class="banner-content">
       <div class="banner-text">
-        <div class="banner-title-line1">VERIFICATIONS</div>
+        <div class="banner-title-line1">SHIPPING TRUST</div>
         <div class="banner-title-line2">HAPPY HOUR</div>
         <div class="banner-title-line3">2026</div>
         <div class="banner-date"><strong>February 28, 2026</strong> &nbsp;|&nbsp; SAN FRANCISCO, CA</div>

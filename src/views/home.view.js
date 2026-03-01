@@ -30,6 +30,12 @@ function getHomePage() {
       width: 100%;
       overflow: hidden;
     }
+    .card-hero {
+      width: 100%;
+      display: block;
+      max-height: 200px;
+      object-fit: cover;
+    }
     .card-top {
       padding: 32px 32px 28px;
       text-align: center;
@@ -113,6 +119,7 @@ function getHomePage() {
 </head>
 <body>
   <div class="card">
+    <img src="/images/Shipping_trust_hh.avif" alt="Shipping Trust Happy Hour" class="card-hero">
     <div class="card-top">
       <div class="logo-wrap">${LINKEDIN_WORDMARK}</div>
       <h1 class="event-name">${EVENT_NAME}</h1>

@@ -178,6 +178,7 @@ async function handleCallback(req, res, parsedUrl) {
       const resultId = Math.random().toString(36).substring(7);
       createSession(resultId, {
         status: 'walk_in',
+        checkinId: checkin?.id || null,
         linkedinName: fullName,
         linkedinEmail: email,
         profilePicture,
@@ -227,6 +228,7 @@ async function handleCallback(req, res, parsedUrl) {
     const resultId = Math.random().toString(36).substring(7);
     createSession(resultId, {
       status: 'success',
+      checkinId: checkin?.id || null,
       attendee,
       linkedinName: fullName,
       linkedinEmail: email,
