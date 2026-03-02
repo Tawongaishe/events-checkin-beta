@@ -123,7 +123,7 @@ function getHomePage() {
     <div class="card-top">
       <div class="logo-wrap">${LINKEDIN_WORDMARK}</div>
       <h1 class="event-name">${EVENT_NAME}</h1>
-      <p class="subtitle">Sign in with your LinkedIn account to verify your identity and check in to the event.</p>
+      <p class="subtitle">Sign in with your LinkedIn account to check in to the event.</p>
     </div>
     <div class="card-body">
       <form action="/auth" method="POST">
