@@ -108,7 +108,11 @@ function getLoginPage(errorMessage = '') {
 }
 
 function getDashboardPage(stats) {
-  const { totalCheckins, totalAttendees, walkIns = 0, checkins } = stats;
+  const {
+    totalCheckins, totalAttendees, walkIns = 0, checkins,
+    feedback = [], avgRating, ratingDistribution = {1:0,2:0,3:0,4:0,5:0},
+    durationBuckets = {}, errors = [], dropOffRate = 0
+  } = stats;
   const registeredCheckins = totalCheckins - walkIns;
   const remaining = Math.max(0, totalAttendees - registeredCheckins);
   const pct = totalAttendees > 0 ? Math.round((registeredCheckins / totalAttendees) * 100) : 0;
@@ -119,6 +123,48 @@ function getDashboardPage(stats) {
     matched_name: '<span class="match-badge match-name">Name</span>',
     not_matched: '<span class="match-badge match-walkin">Walk-in</span>'
   };
+
+  // Rating bar chart
+  const maxRating = Math.max(...Object.values(ratingDistribution), 1);
+  const ratingBarsHtml = [5,4,3,2,1].map(n => {
+    const count = ratingDistribution[n] || 0;
+    const pctBar = Math.round((count / maxRating) * 100);
+    const color = n >= 4 ? '#057642' : n === 3 ? '#c37d16' : '#e53935';
+    return `<div class="chart-row">
+      <span class="chart-label">${'★'.repeat(n)}</span>
+      <div class="chart-bar-wrap"><div class="chart-bar" style="width:${pctBar}%;background:${color}"></div></div>
+      <span class="chart-count">${count}</span>
+    </div>`;
+  }).join('');
+
+  // Duration histogram
+  const maxDuration = Math.max(...Object.values(durationBuckets), 1);
+  const durationBarsHtml = Object.entries(durationBuckets).map(([label, count]) => {
+    const pctBar = Math.round((count / maxDuration) * 100);
+    return `<div class="chart-row">
+      <span class="chart-label" style="width:52px">${label}</span>
+      <div class="chart-bar-wrap"><div class="chart-bar" style="width:${pctBar}%;background:#0a66c2"></div></div>
+      <span class="chart-count">${count}</span>
+    </div>`;
+  }).join('');
+
+  // Feedback comments
+  const feedbackListHtml = feedback.length > 0
+    ? feedback.map(f => {
+        const stars = '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating);
+        const time = f.submitted_at
+          ? new Date(f.submitted_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' · ' +
+            new Date(f.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+          : '';
+        return `<div class="feedback-item">
+          <div class="feedback-stars" style="color:#f59e0b">${stars}</div>
+          <div>
+            <div class="feedback-comment-text">${f.comment ? f.comment : '<span style="color:#bbb;font-style:italic">No comment</span>'}</div>
+            <div class="feedback-meta">${time}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="feedback-empty">No feedback submitted yet.</div>';
 
   const rows = checkins.map(c => {
     const name = c.linkedin_name || c.attendees?.full_name || '—';
@@ -276,6 +322,35 @@ function getDashboardPage(stats) {
     .match-walkin { background: #fdf3d7; color: #c37d16; }
     .empty { padding: 48px; text-align: center; color: #bbb; font-size: 14px; }
     .footer { text-align: center; padding: 20px; color: #bbb; font-size: 12px; }
+    .section-title { font-size: 15px; font-weight: 700; color: #1b1f23; margin: 28px 0 12px; }
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 700px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 18px 20px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    }
+    .chart-card-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+    .chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .chart-label { font-size: 12px; color: #595959; width: 42px; flex-shrink: 0; text-align: right; }
+    .chart-bar-wrap { flex: 1; background: #f3f2ef; border-radius: 3px; height: 18px; overflow: hidden; }
+    .chart-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; min-width: 2px; }
+    .chart-count { font-size: 12px; color: #888; width: 28px; flex-shrink: 0; }
+    .feedback-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .feedback-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .feedback-stars { font-size: 16px; letter-spacing: 1px; flex-shrink: 0; }
+    .feedback-comment-text { font-size: 13px; color: #1b1f23; line-height: 1.5; flex: 1; }
+    .feedback-meta { font-size: 11px; color: #bbb; margin-top: 3px; }
+    .feedback-empty { padding: 24px; text-align: center; color: #bbb; font-size: 13px; background: #fff; border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
   </style>
 </head>
 <body>
@@ -326,6 +401,36 @@ function getDashboardPage(stats) {
       <div class="progress-text">${registeredCheckins} of ${totalAttendees} registered guests checked in (${pct}%)${walkIns > 0 ? ` · ${walkIns} walk-in${walkIns !== 1 ? 's' : ''}` : ''}</div>
     </div>
 
+    <div class="section-title">Experience Metrics</div>
+
+    <div class="stats-grid" style="margin-bottom:12px">
+      <div class="stat-card" style="border-top-color:#f59e0b">
+        <div class="stat-label">Avg Rating</div>
+        <div class="stat-value">${avgRating !== null ? avgRating.toFixed(1) : '—'}</div>
+        <div class="stat-sub">${feedback.length} rating${feedback.length !== 1 ? 's' : ''} submitted</div>
+      </div>
+      <div class="stat-card" style="border-top-color:#e53935">
+        <div class="stat-label">Drop-off Rate</div>
+        <div class="stat-value">${dropOffRate}%</div>
+        <div class="stat-sub">${errors.length} error${errors.length !== 1 ? 's' : ''} / ${checkins.length + errors.length} attempts</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Rating Distribution</div>
+        ${ratingBarsHtml || '<div style="color:#bbb;font-size:13px">No ratings yet</div>'}
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Check-in Duration</div>
+        ${durationBarsHtml || '<div style="color:#bbb;font-size:13px">No duration data yet</div>'}
+      </div>
+    </div>
+
+    <div class="section-title">Feedback Comments</div>
+    <div class="feedback-list">${feedbackListHtml}</div>
+
+    <div class="section-title">Check-In Log</div>
     <div class="table-card">
       <div class="table-head">
         <strong>Check-In Log</strong>

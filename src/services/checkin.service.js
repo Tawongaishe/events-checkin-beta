@@ -134,18 +134,53 @@ async function getAllCheckins() {
 async function getCheckinStats() {
   const client = getClient();
 
-  const [checkinsResult, attendeesResult] = await Promise.all([
+  const [checkinsResult, attendeesResult, feedbackResult, errorsResult] = await Promise.all([
     getAllCheckins(),
-    client.from('attendees').select('id', { count: 'exact', head: true })
+    client.from('attendees').select('id', { count: 'exact', head: true }),
+    client.from('checkin_feedback').select('*').order('submitted_at', { ascending: false }),
+    client.from('checkin_errors').select('id, error_type, error_message, occurred_at').order('occurred_at', { ascending: false })
   ]);
 
   const walkIns = checkinsResult.filter(c => c.match_status === 'not_matched').length;
+
+  // Feedback stats
+  const feedback = feedbackResult.data || [];
+  const ratings = feedback.map(f => f.rating).filter(Boolean);
+  const avgRating = ratings.length > 0
+    ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+    : null;
+  const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  ratings.forEach(r => { if (ratingDistribution[r] !== undefined) ratingDistribution[r]++; });
+
+  // Duration histogram (seconds)
+  const durationBuckets = { '0–5s': 0, '5–10s': 0, '10–15s': 0, '15–20s': 0, '20–30s': 0, '30s+': 0 };
+  checkinsResult.forEach(c => {
+    if (c.checkin_duration_ms == null) return;
+    const s = c.checkin_duration_ms / 1000;
+    if      (s < 5)  durationBuckets['0–5s']++;
+    else if (s < 10) durationBuckets['5–10s']++;
+    else if (s < 15) durationBuckets['10–15s']++;
+    else if (s < 20) durationBuckets['15–20s']++;
+    else if (s < 30) durationBuckets['20–30s']++;
+    else             durationBuckets['30s+']++;
+  });
+
+  // Drop-off (errors / total attempts)
+  const errors = errorsResult.data || [];
+  const totalAttempts = checkinsResult.length + errors.length;
+  const dropOffRate = totalAttempts > 0 ? Math.round((errors.length / totalAttempts) * 100) : 0;
 
   return {
     totalCheckins: checkinsResult.length,
     totalAttendees: attendeesResult.count || 0,
     walkIns,
-    checkins: checkinsResult
+    checkins: checkinsResult,
+    feedback,
+    avgRating,
+    ratingDistribution,
+    durationBuckets,
+    errors,
+    dropOffRate
   };
 }
 

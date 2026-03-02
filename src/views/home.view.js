@@ -138,7 +138,7 @@ function getHomePage() {
       <div class="info-list">
         <div class="info-item">
           <div class="info-dot">✓</div>
-          <span>Your identity is verified using your LinkedIn profile</span>
+          <span>You are checked in using your LinkedIn profile</span>
         </div>
         <div class="info-item">
           <div class="info-dot">✓</div>
