@@ -138,7 +138,7 @@ function getHomePage() {
       <div class="info-list">
         <div class="info-item">
           <div class="info-dot">✓</div>
-          <span>You are checked in using your LinkedIn profile</span>
+          <span>Check in using your LinkedIn profile</span>
         </div>
         <div class="info-item">
           <div class="info-dot">✓</div>
@@ -150,7 +150,7 @@ function getHomePage() {
         </div>
       </div>
 
-      <p class="footer-note">By signing in you agree to share your LinkedIn profile information for event check-in purposes.</p>
+      <p class="footer-note">By signing in you agree to share your LinkedIn profile information for event check-in purposes only.</p>
     </div>
   </div>
 </body>
