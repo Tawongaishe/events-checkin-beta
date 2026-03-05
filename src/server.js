@@ -12,6 +12,8 @@ const { handleResult } = require('./routes/profile.route');
 const { handleDashboard } = require('./routes/dashboard.route');
 const { handleCventDemo } = require('./routes/cvent-demo.route');
 const { handleFeedback } = require('./routes/feedback.route');
+const { getFlowDemoPage } = require('./views/flow-demo.view');
+const { getCventOption1Page, getCventOption2Page } = require('./views/cvent-flow-demo.view');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -45,6 +47,18 @@ const server = http.createServer(async (req, res) => {
 
     } else if (pathname === '/cvent-auth') {
       handleCventAuth(req, res);
+
+    } else if (pathname === '/cvent-option1') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getCventOption1Page());
+
+    } else if (pathname === '/cvent-option2') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getCventOption2Page());
+
+    } else if (pathname === '/flow-demo') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getFlowDemoPage());
 
     } else if (pathname === '/feedback' && req.method === 'POST') {
       await handleFeedback(req, res);

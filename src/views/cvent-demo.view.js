@@ -1,5 +1,7 @@
 const IN_BUG_WHITE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18"><path fill="#fff" d="M92.23,92.23h-11.88v-18.6c0-4.44-.08-10.15-6.18-10.15s-7.14,4.83-7.14,9.83v18.92h-11.88V53.97h11.41v5.23h.16c1.59-3.01,5.47-6.18,11.25-6.18,12.04,0,14.27,7.92,14.27,18.22v20.98ZM41.75,48.74c-3.81,0-6.89-3.09-6.89-6.9s3.08-6.89,6.89-6.89,6.89,3.09,6.89,6.89-3.09,6.9-6.89,6.9m5.94,43.49h-11.89V53.97h11.89v38.26ZM98.15,23.92H29.83c-3.27,0-5.92,2.59-5.92,5.78V98.3c0,3.19,2.65,5.78,5.92,5.78H98.15c3.27,0,5.93-2.59,5.93-5.78V29.7c0-3.19-2.66-5.78-5.93-5.78"/></svg>`;
 
+const SF_CLOUD = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 40" width="36" height="26" fill="#fff"><path d="M23.3 6.5c2-2.1 4.8-3.5 8-3.5 4.4 0 8.2 2.6 10 6.4.9-.4 1.9-.6 2.9-.6 3.8 0 6.8 3 6.8 6.8 0 3.8-3 6.8-6.8 6.8H11.8C8.1 22.4 5 19.3 5 15.6c0-3.5 2.7-6.4 6.1-6.8-.1-.5-.1-1-.1-1.5C11 3.9 14.9 0 19.7 0c1.7 0 3.3.5 4.7 1.3"/></svg>`;
+
 function getCventDemoPage(prefillData = null) {
   const isFilled       = !!prefillData;
   const firstName      = prefillData?.firstName      || '';
@@ -73,11 +75,10 @@ function getCventDemoPage(prefillData = null) {
     `<span class="org-badge${i === 0 ? ' primary' : ''}">${escHtml(org)}${i === 0 ? ' ✓' : ''}</span>`
   ).join('');
 
-  // Helper: render a filled input (value baked into HTML + animation will retype it)
+  // Helper: render a filled input
   function input(id, type, placeholder, val, hasBadge) {
     const filledClass = (isFilled && val) ? ' filled' : '';
     const badge = hasBadge && isFilled && val ? '<span class="voli-badge show">VOLI+</span>' : '';
-    // Value baked into data-fill; input starts empty so animation can type it
     return `<div class="field-input-wrap">
       <input id="${id}" class="field-input${filledClass}" type="${type}" placeholder="${placeholder}" value="" data-fill="${escHtml(val)}" autocomplete="off">
       ${badge}
@@ -98,29 +99,29 @@ function getCventDemoPage(prefillData = null) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Registration — Shipping Trust Happy Hour</title>
+  <title>Registration — Dreamforce 2026</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Helvetica Neue", Arial, "Segoe UI", sans-serif;
-      background: #fff;
+      background: #f4f6f9;
       color: #333;
     }
 
     /* ═══ BANNER ═══ */
     .banner {
-      background: linear-gradient(135deg, #07082b 0%, #110630 35%, #0c1647 65%, #07082b 100%);
+      background: linear-gradient(135deg, #032D60 0%, #00396C 40%, #004E8C 70%, #032D60 100%);
       position: relative;
       overflow: hidden;
-      min-height: 220px;
+      min-height: 240px;
     }
     .banner::before {
       content: '';
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(80,120,255,0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(80,120,255,0.07) 1px, transparent 1px);
+        linear-gradient(rgba(0,161,224,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,161,224,0.08) 1px, transparent 1px);
       background-size: 44px 44px;
       pointer-events: none;
     }
@@ -129,8 +130,8 @@ function getCventDemoPage(prefillData = null) {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 20% 80%, rgba(130,60,255,0.18) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0,80,255,0.15) 0%, transparent 50%);
+        radial-gradient(circle at 15% 85%, rgba(0,161,224,0.22) 0%, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(0,112,210,0.18) 0%, transparent 45%);
       pointer-events: none;
     }
     .banner-inner {
@@ -144,64 +145,129 @@ function getCventDemoPage(prefillData = null) {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 0 0;
+      padding: 18px 0 0;
     }
     .banner-logo {
       display: flex;
       align-items: center;
-      font-size: 22px;
-      font-weight: 800;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 300;
       color: #fff;
+      letter-spacing: 0.5px;
+      text-transform: lowercase;
+    }
+    .banner-logo strong {
+      font-weight: 700;
       letter-spacing: -0.5px;
     }
-    .logo-b {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px; height: 32px;
-      background: #fff;
-      color: #07082b;
-      font-size: 18px;
-      font-weight: 900;
-      border-radius: 5px;
-      margin-right: 6px;
-      font-style: italic;
-    }
     .banner-links { display: flex; gap: 20px; list-style: none; }
-    .banner-links a { color: rgba(255,255,255,0.88); text-decoration: none; font-size: 13px; font-weight: 500; }
-    .banner-links a:hover { color: #ff2d9b; }
+    .banner-links a { color: rgba(255,255,255,0.82); text-decoration: none; font-size: 13px; font-weight: 500; }
+    .banner-links a:hover { color: #00A1E0; }
     .banner-content {
-      padding: 28px 0 36px;
+      padding: 32px 0 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .banner-title-line1 { font-size: 40px; font-weight: 900; color: #fff;    letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; }
-    .banner-title-line2 { font-size: 40px; font-weight: 900; color: #ff2d9b; letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; }
-    .banner-title-line3 { font-size: 40px; font-weight: 900; color: #fff;    letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; margin-bottom: 14px; }
-    .banner-date { font-size: 15px; color: rgba(255,255,255,0.75); font-weight: 500; }
+    .banner-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: #00A1E0;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .banner-title-line1 {
+      font-size: 52px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .banner-title-line2 {
+      font-size: 52px;
+      font-weight: 900;
+      color: #00A1E0;
+      letter-spacing: -1px;
+      line-height: 1;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .banner-date { font-size: 14px; color: rgba(255,255,255,0.72); font-weight: 500; }
     .banner-date strong { color: #fff; }
-    .banner-orb {
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #4a3f8f, #1a0a3d 60%, #0a0520);
-      box-shadow: 0 0 60px rgba(130,60,255,0.4), inset 0 0 40px rgba(0,0,0,0.5);
+
+    /* Cloud graphic */
+    .banner-cloud-wrap {
       flex-shrink: 0;
       position: relative;
-      overflow: hidden;
+      width: 200px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .banner-orb::after {
+    .cloud-shape {
+      position: relative;
+      width: 160px;
+      height: 100px;
+      filter: drop-shadow(0 8px 32px rgba(0,161,224,0.35));
+    }
+    .cloud-shape::before,
+    .cloud-shape::after,
+    .cloud-shape span {
       content: '';
       position: absolute;
-      top: 12px; left: 12px;
-      width: 50px; height: 50px;
+      background: rgba(255,255,255,0.12);
       border-radius: 50%;
-      background: rgba(255,255,255,0.07);
     }
+    .cloud-shape::before {
+      width: 80px; height: 80px;
+      top: 10px; left: 30px;
+      background: rgba(0,161,224,0.25);
+      backdrop-filter: blur(2px);
+    }
+    .cloud-shape::after {
+      width: 110px; height: 70px;
+      bottom: 0; left: 25px;
+      border-radius: 40px;
+      background: rgba(0,161,224,0.18);
+    }
+    .cloud-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .cloud-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0,161,224,0.3);
+    }
+    .cloud-ring:nth-child(1) { width: 120px; height: 120px; }
+    .cloud-ring:nth-child(2) { width: 160px; height: 160px; opacity: 0.6; }
+    .cloud-ring:nth-child(3) { width: 200px; height: 200px; opacity: 0.3; }
 
     /* ═══ FORM AREA ═══ */
-    .form-area { max-width: 960px; margin: 0 auto; padding: 36px 32px 60px; }
-    .form-title { font-size: 30px; font-weight: 700; color: #e0187c; margin-bottom: 28px; }
+    .form-area {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 36px 32px 60px;
+    }
+    .form-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #032D60;
+      margin-bottom: 28px;
+    }
 
     /* VOLI Plus button */
     .voli-wrap { margin-bottom: 24px; }
@@ -210,7 +276,7 @@ function getCventDemoPage(prefillData = null) {
       align-items: center;
       gap: 10px;
       padding: 13px 22px;
-      background: #0a66c2;
+      background: #0070D2;
       color: #fff;
       border: none;
       border-radius: 4px;
@@ -220,8 +286,14 @@ function getCventDemoPage(prefillData = null) {
       text-decoration: none;
       transition: background 0.15s;
     }
-    .voli-btn:hover { background: #004182; }
-    .voli-btn-sub { font-size: 11px; font-weight: 400; opacity: 0.8; }
+    .voli-btn:hover { background: #005BA1; }
+    .powered-by-cvent {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #888;
+      font-weight: 500;
+    }
+    .powered-by-cvent strong { color: #0070D2; font-weight: 700; }
     .voli-or { display: flex; align-items: center; gap: 12px; margin: 16px 0 20px; color: #bbb; font-size: 12px; }
     .voli-or::before, .voli-or::after { content: ''; flex: 1; border-top: 1px solid #e8e8e8; }
 
@@ -230,7 +302,7 @@ function getCventDemoPage(prefillData = null) {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #0a66c2;
+      background: #0070D2;
       color: #fff;
       padding: 8px 16px;
       border-radius: 4px;
@@ -252,7 +324,7 @@ function getCventDemoPage(prefillData = null) {
       margin-bottom: 22px;
     }
     .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; flex-shrink: 0; }
-    .profile-pic.initials { background: #0a66c2; color: #fff; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .profile-pic.initials { background: #0070D2; color: #fff; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .profile-info-name { font-size: 16px; font-weight: 700; color: #111; }
     .profile-info-sub { font-size: 13px; color: #666; margin-top: 2px; }
     .org-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
@@ -262,15 +334,15 @@ function getCventDemoPage(prefillData = null) {
 
     /* Form fields */
     .field-block { margin-bottom: 18px; }
-    .field-label { display: block; font-size: 13px; font-weight: 600; color: #e0187c; margin-bottom: 6px; }
-    .field-label .req { color: #e0187c; }
+    .field-label { display: block; font-size: 13px; font-weight: 600; color: #032D60; margin-bottom: 6px; }
+    .field-label .req { color: #0070D2; }
     .field-input-wrap { position: relative; }
     .field-input {
       width: 100%;
       padding: 11px 14px;
-      background: #f2f2f2;
-      border: 1.5px solid #e8e8e8;
-      border-radius: 3px;
+      background: #fff;
+      border: 1.5px solid #d8dde6;
+      border-radius: 4px;
       font-size: 14px;
       color: #333;
       outline: none;
@@ -287,8 +359,8 @@ function getCventDemoPage(prefillData = null) {
       padding-right: 32px;
       cursor: pointer;
     }
-    .field-input:focus { border-color: #e0187c; background: #fff; box-shadow: 0 0 0 3px rgba(224,24,124,0.1); }
-    .field-input.filling { border-color: #0a66c2 !important; background: #eff6ff !important; box-shadow: 0 0 0 3px rgba(10,102,194,0.12) !important; }
+    .field-input:focus { border-color: #0070D2; background: #fff; box-shadow: 0 0 0 3px rgba(0,112,210,0.12); }
+    .field-input.filling { border-color: #0070D2 !important; background: #eff6ff !important; box-shadow: 0 0 0 3px rgba(0,112,210,0.12) !important; }
     .field-input.filled  { border-color: #057642 !important; background: #f0fdf6 !important; }
     .voli-badge {
       position: absolute;
@@ -299,7 +371,7 @@ function getCventDemoPage(prefillData = null) {
       gap: 3px;
       font-size: 10px;
       font-weight: 700;
-      color: #0a66c2;
+      color: #0070D2;
       background: #dbeafe;
       padding: 2px 7px;
       border-radius: 8px;
@@ -317,7 +389,7 @@ function getCventDemoPage(prefillData = null) {
     .submit-btn {
       display: inline-block;
       padding: 13px 36px;
-      background: #e0187c;
+      background: #0070D2;
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -326,7 +398,7 @@ function getCventDemoPage(prefillData = null) {
       cursor: pointer;
       transition: background 0.15s;
     }
-    .submit-btn:hover { background: #b5106a; }
+    .submit-btn:hover { background: #005BA1; }
     .submit-btn:disabled { background: #057642; cursor: default; }
     .form-fine-print { font-size: 11px; color: #aaa; margin-top: 10px; line-height: 1.5; }
     .section-divider { border: none; border-top: 1px solid #eee; margin: 24px 0; }
@@ -362,7 +434,10 @@ function getCventDemoPage(prefillData = null) {
 <div class="banner">
   <div class="banner-inner">
     <div class="banner-nav">
-      <div class="banner-logo"><span class="logo-b">V</span>VOLI Plus</div>
+      <div class="banner-logo">
+        ${SF_CLOUD}
+        <span><strong>dreamforce</strong></span>
+      </div>
       <ul class="banner-links">
         <li><a href="#">Summary</a></li>
         <li><a href="#">Agenda</a></li>
@@ -373,12 +448,19 @@ function getCventDemoPage(prefillData = null) {
     </div>
     <div class="banner-content">
       <div class="banner-text">
-        <div class="banner-title-line1">SHIPPING TRUST</div>
-        <div class="banner-title-line2">HAPPY HOUR</div>
-        <div class="banner-title-line3">2026</div>
-        <div class="banner-date"><strong>February 28, 2026</strong> &nbsp;|&nbsp; SAN FRANCISCO, CA</div>
+        <div class="banner-eyebrow">San Francisco · September 2026</div>
+        <div class="banner-title-line1">DREAMFORCE</div>
+        <div class="banner-title-line2">'26</div>
+        <div class="banner-date"><strong>September 15–18, 2026</strong> &nbsp;|&nbsp; SAN FRANCISCO, CA</div>
       </div>
-      <div class="banner-orb"></div>
+      <div class="banner-cloud-wrap">
+        <div class="cloud-ring"></div>
+        <div class="cloud-ring"></div>
+        <div class="cloud-ring"></div>
+        <div class="cloud-shape">
+          <div class="cloud-text">DF '26</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -407,6 +489,7 @@ function getCventDemoPage(prefillData = null) {
            ${IN_BUG_WHITE}
            <span>Sign in with LinkedIn</span>
          </a>
+         <div class="powered-by-cvent">Powered by <strong>Cvent</strong></div>
          <div class="voli-or">or fill in manually below</div>`
     }
   </div>
@@ -451,7 +534,6 @@ function getCventDemoPage(prefillData = null) {
     <label class="field-label" for="f_email"><span class="req">* </span>Email Address</label>
     ${input('f_email', 'email', 'your@email.com', email, true)}
   </div>
-
 
   <!-- Mobile / Work Phone -->
   <div class="two-col">
@@ -537,7 +619,6 @@ function getCventDemoPage(prefillData = null) {
   }
 
   async function runAutofill() {
-    // Reset all animated fields to empty first
     FIELDS.forEach(f => {
       const el = document.getElementById(f.id);
       if (el) {
@@ -561,7 +642,6 @@ function getCventDemoPage(prefillData = null) {
   if (IS_FILLED && FIELDS.length > 0) {
     runAutofill();
   } else if (IS_FILLED) {
-    // Fallback: just stamp the data-fill values directly if no JS fields
     document.querySelectorAll('[data-fill]').forEach(el => {
       const val = el.getAttribute('data-fill');
       if (val) { el.value = val; el.classList.add('filled'); }
