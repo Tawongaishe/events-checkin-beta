@@ -15,6 +15,7 @@ const { handleFeedback } = require('./routes/feedback.route');
 const { getFlowDemoPage } = require('./views/flow-demo.view');
 const { getCventOption1Page, getCventOption2Page } = require('./views/cvent-flow-demo.view');
 const { getAttendeeHubPage } = require('./views/attendee-hub.view');
+const { getAttendeeLoginPage } = require('./views/attendee-login.view');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -60,6 +61,10 @@ const server = http.createServer(async (req, res) => {
     } else if (pathname === '/flow-demo') {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(getFlowDemoPage());
+
+    } else if (pathname === '/attendee-login') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getAttendeeLoginPage());
 
     } else if (pathname === '/attendee-hub') {
       res.writeHead(200, { 'Content-Type': 'text/html' });

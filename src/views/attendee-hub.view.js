@@ -501,28 +501,66 @@ function getAttendeeHubPage() {
         </div>
       </div>
 
-      <!-- Connected -->
-      <div class="scroll-card">
-        <div class="connected-row">
-          <div class="connected-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-            <div class="connected-check">✓</div>
+      <!-- LinkedIn section (near top, state-driven) -->
+      <div class="scroll-card" id="linkedinSection">
+        <div class="voli-section-header">
+          <div class="voli-section-label" style="display:flex;align-items:center;gap:8px;">
+            <span style="width:22px;height:22px;background:#0a66c2;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${IN_BUG_WHITE}</span>
+            LinkedIn
           </div>
-          <div class="connected-text">You are connected!</div>
+          <div class="info-wrap">
+            <div class="info-icon">i</div>
+            <div class="info-tooltip">Connecting with LinkedIn pulls in your verified profile, workplace and shared connections — so fellow attendees can see the full picture.</div>
+          </div>
         </div>
-        <div class="connections-row">
-          <div>
-            <div class="avatar-stack">
-              <div class="stack-avatar">JM</div>
-              <div class="stack-avatar">AL</div>
-              <div class="stack-avatar">RK</div>
-              <div class="stack-avatar plus">+9</div>
+
+        <!-- Unverified state -->
+        <div id="stateUnverified">
+          <a class="verify-btn" href="/attendee-hub-auth">
+            ${IN_BUG_WHITE}
+            Enhance with LinkedIn
+          </a>
+          <div class="verify-hint">Enhancing with LinkedIn can improve your attendee experience — we'll pull in your profile info, verifications, and networking data. If you have LinkedIn verifications, those will be shown to other attendees.</div>
+        </div>
+
+        <!-- Verified state -->
+        <div id="stateVerified" style="display:none">
+
+          <!-- Network at event -->
+          <div class="connections-row" style="margin-bottom:14px;">
+            <div>
+              <div class="avatar-stack">
+                <div class="stack-avatar">JM</div>
+                <div class="stack-avatar">AL</div>
+                <div class="stack-avatar">RK</div>
+                <div class="stack-avatar plus">+9</div>
+              </div>
+              <div class="connections-count">12 LinkedIn connections at this event</div>
             </div>
-            <div class="connections-count">12 connections</div>
           </div>
-          <div class="location-col">
-            <div class="location-dot">📍</div>
-            <div class="location-text">Austin, Texas, USA</div>
+
+          <!-- Verified identity card -->
+          <div class="verified-card">
+            <div class="verified-card-header">
+              <div class="verified-card-icon">${IN_BUG_WHITE}</div>
+              <div class="verified-card-title">Verified on LinkedIn</div>
+              <div class="verified-card-check">✓</div>
+            </div>
+            <div class="verified-card-body">
+              <div class="verified-field">
+                <div class="verified-field-label">Identity</div>
+                <div class="verified-field-value">Pujita Tipnis</div>
+              </div>
+              <div class="verified-field">
+                <div class="verified-field-label">Workplace</div>
+                <div class="verified-field-value">Cvent Inc</div>
+              </div>
+            </div>
+            <div class="verified-card-footer">
+              <a class="verified-card-link" href="https://www.linkedin.com/in/tawongaishe" target="_blank" rel="noopener">
+                View LinkedIn profile &nbsp;↗
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -546,52 +584,6 @@ function getAttendeeHubPage() {
           <div class="social-btn">f</div>
           <div class="social-btn">𝕏</div>
           <div class="social-btn">${IN_BUG_WHITE}</div>
-        </div>
-      </div>
-
-      <!-- Verified on LinkedIn -->
-      <div class="scroll-card">
-        <div class="voli-section-header">
-          <div class="voli-section-label">Verified on LinkedIn</div>
-          <div class="info-wrap">
-            <div class="info-icon">i</div>
-            <div class="info-tooltip">LinkedIn verification confirms a member's professional identity and current workplace through trusted third-party sources. Verified details are displayed with a blue checkmark.</div>
-          </div>
-        </div>
-
-        <!-- Unverified state -->
-        <div id="stateUnverified">
-          <a class="verify-btn" href="/attendee-hub-auth">
-            ${IN_BUG_WHITE}
-            Verify on LinkedIn
-          </a>
-          <div class="verify-hint">Confirm your identity and workplace via your LinkedIn profile to unlock verified networking.</div>
-        </div>
-
-        <!-- Verified state (hidden by default) -->
-        <div id="stateVerified" style="display:none">
-          <div class="verified-card">
-            <div class="verified-card-header">
-              <div class="verified-card-icon">${IN_BUG_WHITE}</div>
-              <div class="verified-card-title">Verified on LinkedIn</div>
-              <div class="verified-card-check">✓</div>
-            </div>
-            <div class="verified-card-body">
-              <div class="verified-field">
-                <div class="verified-field-label">Identity</div>
-                <div class="verified-field-value">Pujita Tipnis</div>
-              </div>
-              <div class="verified-field">
-                <div class="verified-field-label">Workplace</div>
-                <div class="verified-field-value">Cvent Inc</div>
-              </div>
-            </div>
-            <div class="verified-card-footer">
-              <a class="verified-card-link" href="https://www.linkedin.com/in/tawongaishe" target="_blank" rel="noopener">
-                View LinkedIn profile &nbsp;↗
-              </a>
-            </div>
-          </div>
         </div>
       </div>
 
