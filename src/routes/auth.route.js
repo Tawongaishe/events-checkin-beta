@@ -23,6 +23,25 @@ function handleCventAuth(req, res) {
   res.end();
 }
 
+// GET /attendee-hub-auth — kick off LinkedIn OAuth for the attendee hub demo
+function handleAttendeeHubAuth(req, res) {
+  if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
+    res.writeHead(500, { 'Content-Type': 'text/html' });
+    res.end(getErrorPage('LinkedIn credentials are not configured.'));
+    return;
+  }
+
+  const scopes = 'r_verify_details r_profile_basicinfo r_most_recent_education r_primary_current_experience';
+  const sessionId = Math.random().toString(36).substring(7);
+  createSession(sessionId, { type: 'attendee_hub', scopes });
+
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${sessionId}&scope=${encodeURIComponent(scopes)}`;
+
+  console.log('🔐 Starting LinkedIn OAuth for attendee hub demo...');
+  res.writeHead(302, { 'Location': authUrl });
+  res.end();
+}
+
 // GET /auth  — kick off the LinkedIn OAuth flow using server-side credentials
 function handleAuth(req, res) {
   if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
@@ -137,6 +156,14 @@ async function handleCallback(req, res, parsedUrl) {
         .filter(Boolean)
         .filter((name, i, arr) => arr.indexOf(name) === i);
 
+      // Extract job title — from primaryCurrentPosition
+      const jobTitle = profileInfo.primaryCurrentPosition?.title?.localized?.en_US
+        || profileInfo.primaryCurrentPosition?.title
+        || '';
+
+      // LinkedIn doesn't expose headline via identityMe; leave blank for manual entry
+      const headline = '';
+
       const resultId = Math.random().toString(36).substring(7);
       createSession(resultId, {
         type:            'cvent_result',
@@ -151,14 +178,24 @@ async function handleCallback(req, res, parsedUrl) {
         isVerified,
         verifications,
         verifiedDetails: workplaceVerifications,
-        education
+        education,
+        jobTitle,
+        headline
       });
       console.log(`✅ Cvent demo autofill ready for: ${fullName} | company: "${cventCompany}" | verified orgs: ${allVerifiedOrgs.join(', ')}`);
       res.writeHead(302, { 'Location': `/cvent-demo?session=${resultId}` });
       res.end();
       return;
     }
-    // ───────────────────────────────────────────────────────────────────────
+
+    // ── Attendee hub demo branch ─────────────────────────────────────────────
+    if (sessionType === 'attendee_hub') {
+      console.log(`✅ Attendee hub verified: ${fullName} | company: "${company}"`);
+      res.writeHead(302, { 'Location': `/attendee-hub?verified=true` });
+      res.end();
+      return;
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // 4. Look up the person on the attendee list
     const { attendee, matchMethod } = await findAttendee(fullName, email, profileUrl);
@@ -254,4 +291,4 @@ async function handleCallback(req, res, parsedUrl) {
   }
 }
 
-module.exports = { handleAuth, handleCventAuth, handleCallback };
+module.exports = { handleAuth, handleCventAuth, handleAttendeeHubAuth, handleCallback };

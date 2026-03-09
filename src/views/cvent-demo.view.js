@@ -15,13 +15,17 @@ function getCventDemoPage(prefillData = null) {
   const verifications  = prefillData?.verifications  || [];
   const verifiedDetails = prefillData?.verifiedDetails || [];
   const allVerifiedOrgs = prefillData?.allVerifiedOrgs || [];
+  const jobTitle       = prefillData?.jobTitle       || '';
+  const headline       = prefillData?.headline       || '';
 
   // Build API panel — identityMe fields
   const identityFields = [
     { key: 'basicInfo.firstName',           value: firstName,  mapsTo: 'First Name'   },
     { key: 'basicInfo.lastName',            value: lastName,   mapsTo: 'Last Name'    },
     { key: 'basicInfo.primaryEmailAddress', value: email,      mapsTo: 'Email'        },
+    { key: 'basicInfo.headline',            value: headline,   mapsTo: 'Bio'          },
     { key: 'basicInfo.profileUrl',          value: profileUrl, mapsTo: 'LinkedIn URL' },
+    { key: 'primaryCurrentPosition.title',  value: jobTitle,   mapsTo: 'Job Title'    },
   ].filter(f => f.value);
 
   // verificationReport fields — one row per verified workplace
@@ -62,6 +66,8 @@ function getCventDemoPage(prefillData = null) {
     { id: 'f_lastName',  value: lastName   },
     { id: 'f_email',     value: email      },
     { id: 'f_company',   value: company    },
+    { id: 'f_jobTitle',  value: jobTitle   },
+    { id: 'f_bio',       value: headline   },
     { id: 'f_linkedin',  value: profileUrl },
   ].filter(f => f.value));
 
@@ -78,7 +84,7 @@ function getCventDemoPage(prefillData = null) {
   // Helper: render a filled input
   function input(id, type, placeholder, val, hasBadge) {
     const filledClass = (isFilled && val) ? ' filled' : '';
-    const badge = hasBadge && isFilled && val ? '<span class="voli-badge show">VOLI+</span>' : '';
+    const badge = hasBadge && isFilled && val ? '<span class="voli-badge show">via LinkedIn</span>' : '';
     return `<div class="field-input-wrap">
       <input id="${id}" class="field-input${filledClass}" type="${type}" placeholder="${placeholder}" value="" data-fill="${escHtml(val)}" autocomplete="off">
       ${badge}
@@ -87,7 +93,7 @@ function getCventDemoPage(prefillData = null) {
 
   function textarea(id, placeholder, val, hasBadge) {
     const filledClass = (isFilled && val) ? ' filled' : '';
-    const badge = hasBadge && isFilled && val ? '<span class="voli-badge show" style="top:12px">VOLI+</span>' : '';
+    const badge = hasBadge && isFilled && val ? '<span class="voli-badge show" style="top:12px">via LinkedIn</span>' : '';
     return `<div class="field-input-wrap">
       <textarea id="${id}" class="field-input${filledClass}" placeholder="${placeholder}" rows="3" data-fill="${escHtml(val)}" autocomplete="off"></textarea>
       ${badge}
@@ -474,8 +480,7 @@ function getCventDemoPage(prefillData = null) {
     ${isFilled
       ? `<div class="verified-strip">
            ${IN_BUG_WHITE}
-           <span>Signed in with LinkedIn · VOLI Plus</span>
-           <span class="v-check">✓ Identity Verified</span>
+           <span>Signed in with LinkedIn</span>
          </div>
          <div class="profile-row">
            ${avatarHtml}
@@ -487,7 +492,7 @@ function getCventDemoPage(prefillData = null) {
          </div>`
       : `<a href="/cvent-auth" class="voli-btn">
            ${IN_BUG_WHITE}
-           <span>Sign in with LinkedIn</span>
+           <span>Autofill with LinkedIn</span>
          </a>
          <div class="powered-by-cvent">Powered by <strong>Cvent</strong></div>
          <div class="voli-or">or fill in manually below</div>`
@@ -526,7 +531,13 @@ function getCventDemoPage(prefillData = null) {
   <!-- Job Title -->
   <div class="field-block">
     <label class="field-label" for="f_jobTitle">Job Title</label>
-    <input id="f_jobTitle" class="field-input" type="text" placeholder="Your job title" autocomplete="off">
+    ${input('f_jobTitle', 'text', 'Your job title', jobTitle, true)}
+  </div>
+
+  <!-- Bio / Headline -->
+  <div class="field-block">
+    <label class="field-label" for="f_bio">Bio</label>
+    ${textarea('f_bio', 'A short bio or headline', headline, true)}
   </div>
 
   <!-- Email -->
