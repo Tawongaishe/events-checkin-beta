@@ -420,6 +420,20 @@ function getAttendeeHubPage() {
       gap: 4px;
     }
     .verified-card-link:hover { text-decoration: underline; }
+    .connect-li-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      background: #0a66c2;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .connect-li-btn:hover { background: #004182; }
 
     /* Bottom nav */
     .bottom-nav {
@@ -482,9 +496,6 @@ function getAttendeeHubPage() {
       <div class="profile-info">
         <div class="name-row">
           <div class="attendee-name">Ms. Pujita Tipnis</div>
-          <a class="li-bug" href="https://www.linkedin.com/in/tawongaishe" target="_blank" rel="noopener">
-            ${IN_BUG_WHITE}
-          </a>
         </div>
         <div class="pronouns">she/her</div>
         <div class="attendee-title">Product Designer</div>
@@ -557,8 +568,9 @@ function getAttendeeHubPage() {
               </div>
             </div>
             <div class="verified-card-footer">
-              <a class="verified-card-link" href="https://www.linkedin.com/in/tawongaishe" target="_blank" rel="noopener">
-                View LinkedIn profile &nbsp;↗
+              <a class="connect-li-btn" href="https://www.linkedin.com/in/tawongaishe" target="_blank" rel="noopener">
+                ${IN_BUG_WHITE}
+                Connect on LinkedIn
               </a>
             </div>
           </div>
