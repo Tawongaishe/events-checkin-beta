@@ -661,9 +661,7 @@ function getCventDemoPage(prefillData = null) {
 
   function handleSubmit() {
     if (!IS_FILLED) { window.location.href = '/cvent-auth'; return; }
-    const btn = document.getElementById('submitBtn');
-    btn.textContent = "✓ You're registered!";
-    btn.disabled = true;
+    window.location.href = '/attendee-login';
   }
 </script>
 </body>

@@ -16,6 +16,8 @@ const { getFlowDemoPage } = require('./views/flow-demo.view');
 const { getCventOption1Page, getCventOption2Page } = require('./views/cvent-flow-demo.view');
 const { getAttendeeHubPage } = require('./views/attendee-hub.view');
 const { getAttendeeLoginPage } = require('./views/attendee-login.view');
+const { getAttendeeNetworkPage } = require('./views/attendee-network.view');
+const { getAttendeeListPage } = require('./views/attendee-list.view');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -70,6 +72,14 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(getAttendeeHubPage());
 
+    } else if (pathname === '/attendee-network') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getAttendeeNetworkPage());
+
+    } else if (pathname === '/attendee-list') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getAttendeeListPage());
+
     } else if (pathname === '/attendee-hub-auth') {
       handleAttendeeHubAuth(req, res);
 
@@ -97,7 +107,7 @@ const server = http.createServer(async (req, res) => {
       fs.readFile(filePath, (err, data) => {
         if (err) { res.writeHead(404); res.end('Not found'); return; }
         const ext = path.extname(filePath).toLowerCase();
-        const mime = { '.avif': 'image/avif', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' }[ext] || 'application/octet-stream';
+        const mime = { '.avif': 'image/avif', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' }[ext] || 'application/octet-stream';
         res.writeHead(200, { 'Content-Type': mime });
         res.end(data);
       });
