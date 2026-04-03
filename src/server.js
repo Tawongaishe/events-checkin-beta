@@ -1,6 +1,15 @@
 // Load environment variables from .env.local
 require('dotenv').config({ path: require('path').join(__dirname, '../.env.local') });
 
+// Polyfill fetch globals for Node 16 (required by Supabase and Anthropic SDK)
+const nodeFetch = require('node-fetch');
+if (!globalThis.fetch) {
+  globalThis.fetch = nodeFetch;
+  globalThis.Headers = nodeFetch.Headers;
+  globalThis.Request = nodeFetch.Request;
+  globalThis.Response = nodeFetch.Response;
+}
+
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
@@ -12,12 +21,14 @@ const { handleResult } = require('./routes/profile.route');
 const { handleDashboard } = require('./routes/dashboard.route');
 const { handleCventDemo } = require('./routes/cvent-demo.route');
 const { handleFeedback } = require('./routes/feedback.route');
+const { handleMockupGenerator, handleGenerateMockupApi } = require('./routes/mockup-generator.route');
 const { getFlowDemoPage } = require('./views/flow-demo.view');
 const { getCventOption1Page, getCventOption2Page } = require('./views/cvent-flow-demo.view');
 const { getAttendeeHubPage } = require('./views/attendee-hub.view');
 const { getAttendeeLoginPage } = require('./views/attendee-login.view');
 const { getAttendeeNetworkPage } = require('./views/attendee-network.view');
 const { getAttendeeListPage } = require('./views/attendee-list.view');
+const { getCventIntegrationSetupPage } = require('./views/cvent-integration-setup.view');
 const { initializeCheckinDatabase } = require('./services/checkin.service');
 const { getResultPage } = require('./views/profile.view');
 const { getErrorPage } = require('./views/error.view');
@@ -80,8 +91,18 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(getAttendeeListPage());
 
+    } else if (pathname === '/cvent-integration-setup') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getCventIntegrationSetupPage());
+
     } else if (pathname === '/attendee-hub-auth') {
       handleAttendeeHubAuth(req, res);
+
+    } else if (pathname === '/mockup-generator') {
+      handleMockupGenerator(req, res);
+
+    } else if (pathname === '/api/generate-mockup' && req.method === 'POST') {
+      await handleGenerateMockupApi(req, res);
 
     } else if (pathname === '/feedback' && req.method === 'POST') {
       await handleFeedback(req, res);
